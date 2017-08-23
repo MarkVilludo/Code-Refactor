@@ -42,7 +42,11 @@ class UserRepository extends BaseRepository
     }
 
     public function createOrUpdate($id = null, $request)
-    { 
+    {   
+        //True or false 
+        //Check if id is null therefore create new user
+        //If exist id or not null update data
+
         $model = is_null($id) ? new User : User::findOrFail($id);
         $model->user_type = $request['role'];
         $model->name = $request['name'];
@@ -54,22 +58,27 @@ class UserRepository extends BaseRepository
         $model->mobile = $request['mobile'];
 
 
-        if (!$id || $id && $request['password']) $model->password = bcrypt($request['password']);
-        $model->detachAllRoles();
-        $model->save();
-        $model->attachRole($request['role']);
+        //if id is equal to null and password passed or not null
+        if (!$id && $request['password']) {
+            $model->password = bcrypt($request['password']);
+            //Is it model function to attach each user roles?
+            $model->detachAllRoles();
+            //Save new user
+            $model->save();
+            $model->attachRole($request['role']);
+        } 
+
         $data = array();
 
         if ($request['role'] == env('CUSTOMER_ROLE_ID')) {
-
-            if($request['consumer_type'] == 'paid')
-            {
-                if($request['company_id'] == '')
-                {
+            if ($request['consumer_type'] == 'paid') {
+                if ($request['company_id'] == '') {
                     $type = Type::where('code', 'paid')->first();
-                    $company = Company::create(['name' => $request['name'], 'type_id' => $type->id, 'additional_info' => 'Created automatically for user ' . $model->id]);
-                    $department = Department::create(['name' => $request['name'], 'company_id' => $company->id, 'additional_info' => 'Created automatically for user ' . $model->id]);
+                    $company = Company::create(['name' => $request['name'], 'type_id' => $type->id, 'additional_info' => 'Created automatically for user ']);
+                    $department = Department::create(['name' => $request['name'], 'company_id' => $company->id, 'additional_info' => 'Created automatically for user ']);
 
+                    //if $id not null goes here
+                    //Update user
                     $model->company_id = $company->id;
                     $model->department_id = $department->id;
                     $model->save();
@@ -119,7 +128,6 @@ class UserRepository extends BaseRepository
                         }
                         $blacklistUpdated [] = $translatorId;
                     }
-
                 }
                 if ($blacklistUpdated) {
                     UsersBlacklist::deleteFromBlacklist($model->id, $blacklistUpdated);
@@ -128,7 +136,7 @@ class UserRepository extends BaseRepository
                 UsersBlacklist::where('user_id', $model->id)->delete();
             }
 
-
+            
         } else if ($request['role'] == env('TRANSLATOR_ROLE_ID')) {
 
             $user_meta = UserMeta::firstOrCreate(['user_id' => $model->id]);
@@ -208,6 +216,7 @@ class UserRepository extends BaseRepository
                 $this->disable($model->id);
             }
         }
+        //return collection model (user data) if not null or return false when failed 
         return $model ? $model : false;
     }
 
