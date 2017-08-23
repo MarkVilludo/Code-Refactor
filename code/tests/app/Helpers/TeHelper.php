@@ -18,8 +18,10 @@ class TeHelper
     }
 
     public static function getUsermeta($user_id, $key = false)
-    {
+    {   
+        //Get key from user meta model
         $user = UserMeta::where('user_id', $user_id)->first()->$key;
+        //if not exist key then do this
         if (!$key) {
             return $user->usermeta()->all();
         } else {
@@ -33,12 +35,13 @@ class TeHelper
     }
 
     public static function convertJobIdsInObjs($jobs_ids)
-    {
+    {   
+        //Initialize array variable
         $jobs = [];
         foreach ($jobs_ids as $job_obj) {
             $jobs[] = Job::findOrFail($job_obj->id);
         }
-        
+        //Return collection of jobs
         return $jobs;
     }
 
@@ -48,6 +51,7 @@ class TeHelper
         $created_at = Carbon::parse($created_at);
         $difference = $due_time->diffInHours($created_at);
 
+        //Additional open and close bracket in condition (s)
         if ($difference <= 90) {
             $time = $due_time;
         } elseif ($difference <= 24) {

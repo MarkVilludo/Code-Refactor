@@ -182,7 +182,7 @@ class UserRepository extends BaseRepository
             }
 
         }
-
+        
         if ($request['new_towns']) {
 
             $towns = new Town;
